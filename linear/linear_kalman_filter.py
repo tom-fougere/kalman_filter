@@ -102,6 +102,12 @@ class LinearKalmanFilter:
         self.R = r_mat
 
     def filter(self, measurements, commands=None):
+        """
+        Run the Linear Kalman Filter on the given measurements
+        :param measurements: (Array [dimObsVector, dimTime]) Measurements to filter
+        :param commands: (Array [dimObsVector, dimTime]) (Optional) Known control inputs of the system (or commands), default to 0
+        :return: (Array [dimStateVector, dimTime]) Estimations of the states
+        """
 
         # Command creation
         if not commands:
@@ -119,6 +125,11 @@ class LinearKalmanFilter:
         return states
 
     def _iterate(self, measurements, commands):
+        """
+        Iterate the Kalman Filter operations (prediction / correction)
+        :param measurements: (Array [dimObsVector, dimTime]) Observed measurements
+        :param commands: (Array [dimObsVector, dimTime]) Commands
+        """
 
         for k in range(self.dim_time-1):
 
