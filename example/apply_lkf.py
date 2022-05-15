@@ -62,7 +62,7 @@ def example_1():
 
 
 def example_2():
-    ## Second example
+    # Second example
     # from: http://www.ferdinandpiette.com/blog/2011/04/exemple-dutilisation-du-filtre-de-kalman/
 
     fe = 50  # sampling frequency
