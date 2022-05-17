@@ -6,28 +6,28 @@ class KalmanEquation(ABC):
         pass
 
     @abstractmethod
-    def state_equation(self):
+    def state_equation(self, states):
         """
         State Equation
         """
         pass
 
     @abstractmethod
-    def jacobian_state_equation(self):
+    def jacobian_state_equation(self, states):
         """
         Jacobian matrix of state Equation
         """
         pass
 
     @abstractmethod
-    def obs_equation(self):
+    def obs_equation(self, states):
         """
         Observation Equation
         """
         pass
 
     @abstractmethod
-    def jacobian_obs_equation(self):
+    def jacobian_obs_equation(self, states):
         """
         Jacobian matrix of observation Equation
         """
