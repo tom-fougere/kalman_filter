@@ -84,9 +84,7 @@ class LinearKalmanFilter:
         # Set matrices
         self.F = f_mat
         self.Q = q_mat
-
-        if b_mat:
-            self.B = b_mat
+        self.B = b_mat
 
     def set_obs_equation(self, h_mat, r_mat):
         """
@@ -131,10 +129,16 @@ class LinearKalmanFilter:
         :param commands: (Array [dimObsVector, dimTime]) Commands
         """
 
+        # Init command signals
+        if commands is None or self.B is None:
+            control_input_commands = np.zeros(self.states.shape)
+        else:
+            control_input_commands = self.B.dot(commands)
+
         for k in range(self.dim_time-1):
 
             # Prediction
-            self.states[:, k+1] = self.F.dot(self.states[:, k])  # + self.B.dot(commands[:, k])
+            self.states[:, k+1] = self.F.dot(self.states[:, k]) + control_input_commands[:, k]
             self.P[:, :, k+1] = self.F.dot(self.P[:, :, k]).dot(self.F.T) + self.Q
 
             # Correction
