@@ -10,7 +10,7 @@ class ExampleEquation(KalmanEquation):
         self.gravity = gravity
         self.Te = Te
 
-    def state_equation(self, states):
+    def state_equation(self, states, commands=None):
         """
         State Equation
         """
@@ -22,7 +22,7 @@ class ExampleEquation(KalmanEquation):
         ]
         return np.asarray(state_matrix)
 
-    def jacobian_state_equation(self, states):
+    def jacobian_state_equation(self, states, commands=None):
         """
         Jacobian matrix of state Equation
         """

@@ -6,14 +6,14 @@ class KalmanEquation(ABC):
         pass
 
     @abstractmethod
-    def state_equation(self, states):
+    def state_equation(self, states, commands):
         """
         State Equation
         """
         pass
 
     @abstractmethod
-    def jacobian_state_equation(self, states):
+    def jacobian_state_equation(self, states, commands):
         """
         Jacobian matrix of state Equation
         """

@@ -34,14 +34,6 @@ class ExtendedKalmanFilter:
 
     # Class containing state equation, observation equation and their jacobian matrices
     kalman_equations = None
-    # # State Equation
-    # f_state_equation = None
-    # # Jacobian matrix of State Equation
-    # f_jacobian_state_equation = None
-    # # Observation Equation
-    # f_obs_equation = None
-    # # Jacobian matrix of observation equation
-    # f_jacobian_obs_equation = None
 
     def __init__(self, dim_state_vector, dim_obs_vector, dim_time):
         """
@@ -79,7 +71,7 @@ class ExtendedKalmanFilter:
         # Beginning of the first step
         self.P[:, :, 0] = init_cov
         self.states[:, 0] = init_states
-        self.H = self.kalman_equations.jacobian_obs_equation(self.states[:, 0])
+        self.H = self.kalman_equations.jacobian_obs_equation(self.states[:, 0]).T
         inverse_matrix = np.linalg.inv(self.H.dot(self.P[:, :, 0]).dot(self.H.T) + self.R)
         self.K[:, :, 0] = self.P[:, :, 0].dot(self.H.T).dot(inverse_matrix)
 
@@ -106,11 +98,12 @@ class ExtendedKalmanFilter:
         self.Q = q_mat
         self.R = r_mat
 
-    def filter(self, measurements):
+    def filter(self, measurements, commands=None):
 
         """
         Run the Extended Kalman Filter on the given measurements
         :param measurements: (Array [dimObsVector, dimTime]) Measurements to filter
+        :param commands: (Array) Command vector
         :return: (Array [dimStateVector, dimTime]) Estimations of the states
         """
 
@@ -118,28 +111,35 @@ class ExtendedKalmanFilter:
         self.innovation[:, 0] = measurements[:, 0] - self.H.dot(self.states[:, 0])
 
         # Iteration Kalman operations
-        self._iterate(measurements)
+        self._iterate(measurements, commands=commands)
 
         # Broadcast outputs
         states = self.states
 
         return states
 
-    def _iterate(self, measurements):
+    def _iterate(self, measurements, commands):
         """
         Iterate the Extended Kalman Filter operations (prediction / correction)
         :param measurements: (Array [dimObsVector, dimTime]) Observed measurements
+        :param commands: (Array [..., dimTime]) Commands measurements
         """
 
         for k in range(self.dim_time-1):
 
+            # Init command signals
+            if commands is None:
+                commands = np.zeros(measurements.shape)
+
             # Prediction
-            self.F = self.kalman_equations.jacobian_state_equation(self.states[:, k])
-            self.states[:, k+1] = self.kalman_equations.state_equation(self.states[:, k])
+            self.F = self.kalman_equations.jacobian_state_equation(
+                states=self.states[:, k], commands=commands[:, k])
+            self.states[:, k+1] = self.kalman_equations.state_equation(
+                states=self.states[:, k], commands=commands[:, k])[:, 0]
             self.P[:, :, k+1] = self.F.dot(self.P[:, :, k]).dot(self.F.T) + self.Q
 
             # Correction
-            self.H = self.kalman_equations.jacobian_obs_equation(self.states[:, k])
+            self.H = self.kalman_equations.jacobian_obs_equation(self.states[:, k]).T
             inverse_matrix = np.linalg.inv(self.H.dot(self.P[:, :, k+1]).dot(self.H.T) + self.R)
             self.K[:, :, k+1] = self.P[:, :, k+1].dot(self.H.T).dot(inverse_matrix)
             self.innovation[:, k+1] = measurements[:, k+1] - self.kalman_equations.obs_equation(self.states[:, k+1])
