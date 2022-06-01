@@ -1,4 +1,6 @@
 import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 class ExtendedKalmanFilter:
@@ -143,3 +145,56 @@ class ExtendedKalmanFilter:
             self.innovation[:, k+1] = measurements[:, k+1] - self.kalman_equations.obs_equation(self.states[:, k+1])
             self.states[:, k+1] = self.states[:, k+1] + self.K[:, :, k+1].dot(self.innovation[:, k+1])
             self.P[:, :, k+1] = (np.eye(self.dim_state_vector) - self.K[:, :, k+1].dot(self.H)).dot(self.P[:, :, k+1])
+
+    def plot_inner_matrices(self):
+        """
+        Plot inner matrices of the current kalman filter
+        The graph will contain the values of P, K and Innovation
+        :return:
+        """
+        figure = make_subplots(rows=3, cols=1,
+                               shared_xaxes=True,
+                               subplot_titles=("P matrix", "K matrix", "Innovation"))
+
+        x = np.linspace(0, self.dim_time, num=self.dim_time, endpoint=False)
+
+        # P matrix
+        for row in range(self.dim_state_vector):
+            for column in range(self.dim_state_vector):
+                figure.add_trace(
+                    go.Scatter(
+                        x=x,
+                        y=self.P[row, column, :],
+                        name='P(' + str(row) + ', ' + str(column) + ')',
+                    ),
+                    row=1,
+                    col=1,
+                )
+
+        # K matrix
+        for row in range(self.dim_state_vector):
+            for column in range(self.dim_obs_vector):
+                figure.add_trace(
+                    go.Scatter(
+                        x=x,
+                        y=self.K[row, column, :],
+                        name='K(' + str(row) + ', ' + str(column) + ')',
+                    ),
+                    row=2,
+                    col=1,
+                )
+
+        # Innovation matrix
+        for row in range(self.dim_obs_vector):
+            figure.add_trace(
+                go.Scatter(
+                    x=x,
+                    y=self.innovation[row, :],
+                    name='Innovation(' + str(row) + ')',
+                ),
+                row=3,
+                col=1,
+            )
+
+        figure.show()
+
